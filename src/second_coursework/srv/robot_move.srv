@@ -1,0 +1,4 @@
+move_base_msgs/MoveBaseGoal goal
+---
+string room_name
+bool reached
