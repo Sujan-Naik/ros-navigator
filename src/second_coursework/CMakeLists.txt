@@ -12,7 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   actionlib_msgs
+  actionlib
   move_base_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -57,16 +59,13 @@ add_message_files(
 add_service_files(
   FILES
   robot_move.srv
-  robot_move_request.srv
-  robot_move_response.srv
 )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+add_action_files(
+  DIRECTORY action FILES
+  room_check.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -74,6 +73,7 @@ generate_messages(
   std_msgs  # Or other packages containing msgs
   actionlib_msgs
   move_base_msgs
+  geometry_msgs
 )
 
 ################################################
@@ -113,6 +113,7 @@ catkin_package(
   std_msgs
   actionlib_msgs
   move_base_msgs
+  geometry_msgs
 #  DEPENDS system_lib
 )
 
