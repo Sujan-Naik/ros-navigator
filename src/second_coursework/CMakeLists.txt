@@ -64,7 +64,7 @@ add_service_files(
 ## Generate actions in the 'action' folder
 add_action_files(
   DIRECTORY action FILES
-  room_check.action
+  RoomCheck.action
 )
 
 ## Generate added messages and services with any dependencies listed here
