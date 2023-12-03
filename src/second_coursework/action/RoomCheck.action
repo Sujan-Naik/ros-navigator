@@ -1,4 +1,4 @@
-move_base_msgs/MoveBaseGoal goal
+int8 times_to_check
 ---
 int8[] rule_break_amount
 ---
