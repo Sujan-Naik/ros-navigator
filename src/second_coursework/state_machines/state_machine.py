@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import math
+
 import actionlib
 import actionlib_msgs.msg
 import move_base_msgs.msg
@@ -6,6 +8,7 @@ import rospy
 import smach
 import std_msgs
 from actionlib_msgs.msg import GoalID, GoalStatus
+from geometry_msgs.msg import Twist
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from smach import StateMachine, Iterator, Sequence, CBState
 from smach_ros import SimpleActionState, ActionServerWrapper
@@ -17,6 +20,13 @@ def robot_move_CB(self,room_name):
     robot_move_proxy = rospy.ServiceProxy(name='robot_move_service', service_class=robot_move)
     try:
         if robot_move_proxy(room_name).reached == True:
+            reached_time = rospy.get_rostime().to_time()
+            while rospy.get_rostime().to_time() - reached_time < 30:
+                pub = rospy.Publisher(name='/cmd_vel', data_class=Twist, queue_size=10, latch=True)
+                velocity = Twist()
+                velocity.linear.x = 2
+                velocity.angular.z = math.radians(90)
+                pub.publish(velocity)
             return 'succeeded'
         return 'aborted'
     except rospy.ServiceException as e:

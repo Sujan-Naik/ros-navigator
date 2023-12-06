@@ -49,7 +49,7 @@ def robot_move_callback(request):
     client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
     client.wait_for_server()
     client.send_goal(goal)
-    client.wait_for_result(rospy.Duration.from_sec(20))
+    client.wait_for_result(rospy.Duration.from_sec(30))
     if client:
         return True
 
