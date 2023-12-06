@@ -3,3 +3,4 @@ int8 times_to_check
 int8[] rule_break_amount
 ---
 geometry_msgs/Point robot_position
+int8 rule_broken
