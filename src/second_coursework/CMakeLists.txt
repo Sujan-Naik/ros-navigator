@@ -53,12 +53,14 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  YOLODetection.msg
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
   robot_move.srv
+  yolo_detect.srv
 )
 
 ## Generate actions in the 'action' folder
