@@ -3,11 +3,9 @@ import random
 
 import actionlib
 import rospy
-import std_msgs
-from actionlib_msgs.msg import GoalID
-from second_coursework.srv import robot_move
-from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseGoal, MoveBaseAction, MoveBaseActionResult
+from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 
+from second_coursework.srv import robot_move
 
 "Taken from decompiled itr_cw_video.pyc"
 ROOM_A_CORNERS = [
@@ -85,10 +83,16 @@ def robot_move_callback(request):
     return False
 
 
-def robot_move_server():
+def start():
     """Initialises the movement node and service"""
     try:
         rospy.init_node('robot_move_server')
-    except rospy.exceptions.ROSException as e:
+    except rospy.exceptions.ROSException:
         print("Node has already been initialized")
     rospy.Service(name='robot_move_service', service_class=robot_move, handler=robot_move_callback)
+
+if __name__ == '__main__':
+    try:
+        start()
+    except rospy.ROSInterruptException:
+        pass

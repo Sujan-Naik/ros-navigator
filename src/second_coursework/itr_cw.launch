@@ -1,0 +1,6 @@
+<launch>
+  <node name="yolo_robot" pkg="second_coursework" type="yolo.py" output="screen"/>
+  <node name="robot_move_server" pkg="second_coursework" type="robot_move_server.py" output="screen"/>
+  <node name="robot_state_machine_server" pkg="second_coursework" type="state_machine.py" output="screen"/>
+  <node name="main" pkg="second_coursework" type="main_node.py" output="screen"/>
+</launch>
