@@ -26,3 +26,6 @@ client.wait_for_server()
 room_check_goal = RoomCheckGoal()
 room_check_goal.times_to_check = 3
 client.send_goal(room_check_goal)
+result = client.get_result()
+rospy.loginfo(f'Rule 1 was broken {result[0]} times')
+rospy.loginfo(f'Rule 2 was broken {result[1]} times')
