@@ -40,9 +40,9 @@ def get_random_point(corners, axis):
     for point in corners:
         value = point[axis]
         if value > highest:
-            highest = value
+            highest = value - 0.5
         if value < lowest:
-            lowest = value
+            lowest = value + 0.5
     return random.uniform(lowest,highest)
 
 

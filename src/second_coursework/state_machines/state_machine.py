@@ -11,10 +11,13 @@ import std_msgs
 from actionlib_msgs.msg import GoalID, GoalStatus
 from geometry_msgs.msg import Twist, PoseStamped
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
+from rospy import Duration
 from smach import StateMachine, Iterator, Sequence, CBState, Concurrence
 from smach_ros import SimpleActionState, ActionServerWrapper
+from std_msgs.msg import String
 
-from second_coursework.msg import RoomCheckAction, RoomCheckActionGoal, RoomCheckActionResult, RoomCheckActionFeedback, RoomCheckFeedback
+from second_coursework.msg import RoomCheckAction, RoomCheckActionGoal, RoomCheckActionResult, RoomCheckActionFeedback, \
+    RoomCheckFeedback, RoomCheckResult
 from second_coursework.srv import robot_move, yolo_detect
 
 
@@ -35,10 +38,14 @@ def robot_move_CB(self, room_name, navigation_time):
                 cat_detected = False
                 dog_detected = False
                 for detection in detection_service().detections:
-                    if not rule_1_broken and room_name == 'D' and detection.name == 'person':
+                    if (not rule_1_broken) and room_name == 'D' and detection.name == 'person':
                         rule_1_broken = True
-                        self.result.result.rule_break_amount[0] = self.result.result.rule_break_amount[0]+1
-                        publish_feedback(self,1)
+                        self.result.rule_break_amount[0] = self.result.rule_break_amount[0] + 1
+                        try:
+                            message = rospy.wait_for_message(topic='move_base/feedback', topic_type=PoseStamped, timeout=rospy.rostime.Duration(secs=5))
+                            publish_feedback(self, 1, message)
+                        except rospy.ROSInterruptException:
+                            rospy.logerr_once('No feedback on move_base/feedback to obtain position, rule break 1 discarded')
 
                     if detection.name == 'cat':
                         cat_detected = True
@@ -46,8 +53,13 @@ def robot_move_CB(self, room_name, navigation_time):
                         dog_detected = True
 
                 if dog_detected and cat_detected:
-                    self.result.result.rule_break_amount[1] = self.result.result.rule_break_amount[1]+1
-                    publish_feedback(self, 2)
+                    self.result.rule_break_amount[1] = self.result.rule_break_amount[1] + 1
+                    try:
+                        message = rospy.wait_for_message(topic='move_base/feedback', topic_type=PoseStamped,
+                                                         timeout=rospy.rostime.Duration(secs=5))
+                        publish_feedback(self, 2, message)
+                    except rospy.ROSInterruptException:
+                        rospy.logerr_once('No feedback on move_base/feedback to obtain position, rule break 2 discarded')
 
                 robot_move_proxy(room_name)
 
@@ -56,21 +68,22 @@ def robot_move_CB(self, room_name, navigation_time):
     except rospy.ServiceException as e:
         rospy.logerr('\nInvalid room name, either A, B or D')
 
-sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted'], input_keys=['goal'], output_keys=['feedback','result'])
 
+sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted'], input_keys=['goal'],
+                  output_keys=['feedback', 'result'])
 
 with sm:
-
     it = Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
                   it=lambda: range(0, sm.userdata.goal.times_to_check + 1),
                   input_keys=[],
                   output_keys=['result'], exhausted_outcome='succeeded')
 
     with it:
-        container_sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'continue'], output_keys=['feedback', 'result'])
+        container_sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'continue'],
+                                    output_keys=['feedback', 'result'])
         container_sm.userdata.feedback = RoomCheckFeedback()
-        container_sm.userdata.result = RoomCheckActionResult()
-        container_sm.userdata.result.result.rule_break_amount = [0,0]
+        container_sm.userdata.result = RoomCheckResult()
+        container_sm.userdata.result.rule_break_amount = [0, 0]
         with container_sm:
             container_sm.add(label='room_check_A',
                              state=CBState(cb=robot_move_CB,
@@ -78,7 +91,6 @@ with sm:
                                            outcomes=['succeeded', 'preempted', 'aborted'],
                                            io_keys=['feedback', 'result']),
                              transitions={'succeeded': 'room_check_B'}),
-
 
             container_sm.add(label='room_check_B',
                              state=CBState(cb=robot_move_CB,
@@ -94,11 +106,9 @@ with sm:
                                            io_keys=['feedback', 'result']),
                              transitions={'succeeded': 'continue'})
 
-
         Iterator.set_contained_state('CONTAINER_STATE', container_sm, loop_outcomes=['continue'])
 
     StateMachine.add('it', it, {'succeeded': 'succeeded', 'aborted': 'aborted'})
-
 
 asw = ActionServerWrapper(
     'server', RoomCheckAction,
@@ -112,12 +122,15 @@ asw = ActionServerWrapper(
 )
 
 
-def publish_feedback(self, rule_broke):
-    message = rospy.wait_for_message(topic='move_base/feedback', topic_type=PoseStamped)
+def publish_feedback(self, rule_broke, message):
     self.feedback.robot_position = message.feedback.base_position.pose.position
     self.feedback.rule_broken = rule_broke
-    ActionServerWrapper.publish_feedback(self=asw,userdata=self)
-    rospy.loginfo('this has happened!!')
+    ActionServerWrapper.publish_feedback(self=asw, userdata=self)
+    pub = rospy.Publisher('/tts/phase', String, queue_size=1)
+    if rule_broke == 1:
+        pub.publish('Person leave')
+    else:
+        pub.publish('Cats and dogs leave')
 
 
 def run():
