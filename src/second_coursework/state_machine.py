@@ -91,7 +91,7 @@ def robot_move_CB(self, room_name, navigation_time):
                             try:
                                 message = rospy.wait_for_message(topic='move_base/feedback', topic_type=PoseStamped, timeout=rospy.rostime.Duration(secs=5))
                                 publish_feedback(self, 1, message)
-                            except rospy.ROSInterruptException:
+                            except rospy.ROSException:
                                 rospy.logerr_once('No feedback on move_base/feedback to obtain position, rule break 1 discarded')
 
                         if detection.name == 'cat':
@@ -105,7 +105,7 @@ def robot_move_CB(self, room_name, navigation_time):
                             message = rospy.wait_for_message(topic='move_base/feedback', topic_type=PoseStamped,
                                                              timeout=rospy.rostime.Duration(secs=5))
                             publish_feedback(self, 2, message)
-                        except rospy.ROSInterruptException:
+                        except rospy.ROSException:
                             rospy.logerr_once('No feedback on move_base/feedback to obtain position, rule break 2 discarded')
 
                 except rospy.ServiceException as e:
@@ -132,6 +132,7 @@ def run():
     try:
         rospy.init_node('robot_state_machine_server')
         ITRStateMachine()
+        rospy.spin()
     except rospy.exceptions.ROSException:
         print("Node has already been initialized")
 

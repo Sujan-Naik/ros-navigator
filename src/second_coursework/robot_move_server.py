@@ -90,6 +90,7 @@ def start():
     except rospy.exceptions.ROSException:
         print("Node has already been initialized")
     rospy.Service(name='robot_move_service', service_class=robot_move, handler=robot_move_callback)
+    rospy.spin()
 
 if __name__ == '__main__':
     try:

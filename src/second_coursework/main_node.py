@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+
 import actionlib
 import rospy
 
@@ -20,7 +22,8 @@ def main():
     client = actionlib.SimpleActionClient('robot_state_machine_action_server', RoomCheckAction)
     client.wait_for_server()
     room_check_goal = RoomCheckGoal()
-    room_check_goal.times_to_check = 1
+    print(f'WEQWEQWEQW: {sys.argv[1]}')
+    room_check_goal.times_to_check = int(float(sys.argv[1]))
     client.send_goal(room_check_goal)
 
     client.wait_for_result()

@@ -13,8 +13,6 @@ class YOLO:
         self.cv_image = None
         self.cam_subs = rospy.Subscriber("/camera/image", Image, self.image_callback)
         self.yolo_srv = rospy.Service('/detect_frame', yolo_detect, self.yolo_service)
-
-
         self.detector = Detector(gpu_id=1, config_path='/opt/darknet/cfg/yolov4.cfg',
                                  weights_path='/opt/darknet/yolov4.weights',
                                  lib_darknet_path='/opt/darknet/libdarknet.so',
@@ -42,7 +40,7 @@ def start():
         print("Node has already been initialized")
 
     YOLO()
-
+    rospy.spin()
 
 if __name__ == '__main__':
     try:
