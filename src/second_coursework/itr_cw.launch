@@ -1,7 +1,5 @@
 <launch>
   <env name="/usr/bin/env" value="python3" />
-  <arg name="vid_folder" default="$(find second_coursework)/../../cw_videos" />
-  python3 itr_cw_video.pyc "vid_folder"
   <node name="yolo_robot" pkg="second_coursework" type="yolo.py" output="screen"/>
   <node name="robot_move_server" pkg="second_coursework" type="robot_move_server.py" output="screen"/>
   <node name="robot_state_machine_server" pkg="second_coursework" type="state_machine.py" output="screen"/>
